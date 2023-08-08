@@ -41,8 +41,8 @@ func main() {
 	http.HandleFunc("/create", urlController.CreateUrl)
 	http.HandleFunc("/get", urlController.GetUrlByShortCode)
 
-	port := 1414
-	fmt.Printf("server is running on port %d", port)
+	port := 1515
+	fmt.Printf("server is running on port %d\n", port)
 	http.ListenAndServe(fmt.Sprintf(":%d", port), nil)
 
 }
