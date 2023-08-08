@@ -5,7 +5,6 @@ import (
 	"log"
 	"net/http"
 	"urlgo/services"
-	"urlgo/utils"
 )
 
 type URLController struct {
@@ -25,11 +24,6 @@ type GetRequest struct {
 }
 
 func (c *URLController) CreateUrl(w http.ResponseWriter, r *http.Request) {
-	isHttpMethodAllowed := utils.IsMethodAllowed(w, r, http.MethodPost)
-	if !isHttpMethodAllowed {
-		return
-	}
-
 	var createRequest CreateRequest
 
 	// read the data from request body
@@ -62,25 +56,19 @@ func (c *URLController) CreateUrl(w http.ResponseWriter, r *http.Request) {
 }
 
 func (c *URLController) GetUrlByShortCode(w http.ResponseWriter, r *http.Request) {
-	isHttpMethodAllowed := utils.IsMethodAllowed(w, r, http.MethodPost)
-	if !isHttpMethodAllowed {
-		return
-	}
-	var getRequest GetRequest
-	err := json.NewDecoder(r.Body).Decode(&getRequest)
-	if err != nil {
-		http.Error(w, "Bad request", http.StatusBadRequest)
+	// get all query parameters
+	queryParams := r.URL.Query()
 
-		return
-	}
+	//retrieves values for code key
+	code := queryParams.Get("code")
 
-	if getRequest.ShortCode == "" {
+	if len(code) == 0 {
 		http.Error(w, "shortCode is required to get URL", http.StatusBadRequest)
 
 		return
 	}
 
-	url, err := c.URLService.GetUrlByShortCode(getRequest.ShortCode)
+	url, err := c.URLService.GetUrlByShortCode(code)
 	if err != nil {
 		http.Error(w, "ShortCode not exists in DB", http.StatusBadRequest)
 

@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"urlgo/config"
 	"urlgo/controllers"
+	"urlgo/middlewares"
 	"urlgo/services"
 
 	_ "github.com/go-sql-driver/mysql"
@@ -38,8 +39,8 @@ func main() {
 	urlService := services.NewUrlService(db)
 	urlController := controllers.NewUrlController(urlService)
 
-	http.HandleFunc("/create", urlController.CreateUrl)
-	http.HandleFunc("/get", urlController.GetUrlByShortCode)
+	http.HandleFunc("/createShortCode", middlewares.IsHttpMethodAllowed(http.MethodPost, urlController.CreateUrl))
+	http.HandleFunc("/getUrl", middlewares.IsHttpMethodAllowed(http.MethodGet, urlController.GetUrlByShortCode))
 
 	port := 1515
 	fmt.Printf("server is running on port %d\n", port)

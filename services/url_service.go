@@ -26,13 +26,16 @@ func NewUrlService(db *sql.DB) URLService {
 func (s *urlService) CreateUrl(original string) (*models.URL, error) {
 	shortCode := generateShortCode(6)
 	query := "INSERT into urls (original, shortCode) VALUES (?, ?)"
-	_, err := s.db.Exec(query, original, shortCode)
+	result, err := s.db.Exec(query, original, shortCode)
 	if err != nil {
 		log.Println(err)
 		return nil, errors.New("failed to stored url in DB")
 	}
 
+	lastInsertedId, _ := result.LastInsertId()
+
 	return &models.URL{
+		ID:        uint(lastInsertedId),
 		Original:  original,
 		ShortCode: shortCode,
 	}, nil
@@ -40,8 +43,8 @@ func (s *urlService) CreateUrl(original string) (*models.URL, error) {
 
 func (s *urlService) GetUrlByShortCode(shortCode string) (*models.URL, error) {
 	var url models.URL
-	query := "SELECT original from urls where shortCode = ?"
-	err := s.db.QueryRow(query, shortCode).Scan(&url.Original)
+	query := "SELECT id, original from urls where shortCode = ?"
+	err := s.db.QueryRow(query, shortCode).Scan(&url.ID, &url.Original)
 	if err != nil {
 		log.Println(err)
 
@@ -79,11 +82,4 @@ func generateShortCode(length int) string {
 	shortCode := base64.RawURLEncoding.EncodeToString(randomBytes)
 
 	return shortCode[:length]
-
-	// rand.Seed(time.Now().UnixNano())
-	// shortCode := make([]byte, length)
-	// for i := range shortCode {
-	// 	shortCode[i] = chartSet[rand.Intn(len(chartSet))]
-	// }
-	// return string(shortCode)
 }
